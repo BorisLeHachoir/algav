@@ -7,8 +7,12 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-#define ALPHABET_SIZE 128
+#define ALPHABET_SIZE 26
 #define MAXIMUM_WORD_SIZE 16
+#define CHAR_END_WORD '_'
+
+
+/****************** PATRICIA TRIES ******************/ 
 
 typedef struct PatriciaTries
 {
@@ -29,26 +33,6 @@ PatriciaTries* emptyPatriciaTrie()
 	return pt;
 }
 
-void printkey(PatriciaTries* pt)
-{
-	int i;
-	if(pt->key != NULL)
-	{
-		printf("[");
-		for(i=0; i<ALPHABET_SIZE; ++i)
-		{
-			if(pt->key[i] != NULL)
-				printf("%s | ", pt->key[i]);
-		}
-		printf("]");
-		printf("\n");
-		for(i=0; i<ALPHABET_SIZE; ++i)
-		{
-			if(pt->children[i] != NULL)
-				printkey(pt->children[i]);
-		}
-	}
-}
 
 char* commonPreffix(char* m1, char* m2)
 {
@@ -75,10 +59,45 @@ char* commonPreffix(char* m1, char* m2)
 	return res;
 }
 
+void add(PatriciaTries *pt, char* m)
+{
+	if( m[0] == '\0')
+		pt->key[0][0] = CHAR_END_WORD;
+	else if(strcmp(pt->key[(m[0] -'a')], "\0") == 0)
+		strcpy(pt->key[(m[0] -'a')], m);
+	else
+		printf("AJOUT A TRAITER \n");
+
+}
+
+void displayPatricia(PatriciaTries *pt)
+{
+	int i,j;
+	for (i=0;i<ALPHABET_SIZE;i++)
+	{
+		if(pt->key[i][0] != '\0')
+			printf("|%s", pt->key[i]);
+	}
+	printf("\n");
+	for (i=0;i<ALPHABET_SIZE;i++)
+	{
+		if(pt->children[i] != NULL)
+			displayPatricia(pt->children[i]);
+	}
+}
+
+
 int main (int argc, char *argv[]) {
 
 	PatriciaTries* pt;
 	pt = emptyPatriciaTrie();
+	
+	add(pt, "absurde");
+	add(pt, "iiyama");
+	add(pt, "ppti");
+	add(pt, "zebra");
+	add(pt, "ppp");
+	displayPatricia(pt);
 
 	return EXIT_SUCCESS;	
 }
