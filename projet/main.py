@@ -4,6 +4,8 @@ import sys
 
 ALPHABET_SIZE = 40
 DEBUG = 0
+#todo Cpt de NIL et de hauteur a update directement dans l'ajout 
+#todo comonPrefix 
 
 def getIdWord(s):
 	char=s[0]
@@ -22,7 +24,18 @@ def getIdWord(s):
 	else:
 		print 'PANIC : '+char+'non connu'
 
+def comonPrefix(str1, str2):
+	for i in range(len(str1)):
+		if str2[i]:
+			if str1[i]!=str2[i]:
+				return str1[:i]
+	return str1
+
+
+############################
 ####### PatriciaTree #######
+############################
+
 class PatriciaTree(object):
 	def __init__(self):
 		self.key = [None] * ALPHABET_SIZE
@@ -94,9 +107,25 @@ class PatriciaTree(object):
 						print "PANIC: strpre&oldkey"
 
 
+	def printsearch(self, word):
+		print "Recherche de: ", word, ": ", str(self.search(word))
 
+	def search(self, word):
+		if word == "" and self.key[0] == '_':
+			return True
+		mykey = self.key[getIdWord(word)]
+		if mykey == None:
+			return False
+		elif self.key[getIdWord(word)][:-1] == word:
+			return True
+		elif self.children[getIdWord(mykey)] == None:
+			return False
+		else:
+			prefix = comonPrefix(self.key[getIdWord(word)], word)
+			word = word[len(prefix):]
+			return self.children[getIdWord(mykey)].search(word)
 
-	def getWords(self, word):
+	def printWords(self, word):
 		for k in self.key:
 			if k:
 				if k[-1:] == '_':
@@ -128,7 +157,6 @@ class PatriciaTree(object):
 		i = 0
 		for elem in self.key:
 			if elem:
-				sys.stdout.write(str(i))
 				sys.stdout.write("KEY: ")
 				sys.stdout.write(elem)
 				sys.stdout.write(" CHILD: ")
@@ -139,7 +167,6 @@ class PatriciaTree(object):
 							sys.stdout.write(" | ")
 				print
 			i+=1
-		print
 		for elem in self.children:
 			if elem:
 				elem.displayPT()
@@ -147,15 +174,27 @@ class PatriciaTree(object):
 	def getWordCount(self):
 		return self.wordCount
 
+	def getHeight(self):
+		h = 0;
+		for c in self.children:
+			if c:
+				if c.getHeight()+1 > h:
+					h =  c.getHeight()+1
+		return h
 
-def comonPrefix(str1, str2):
-	for i in range(len(str1)):
-		if str1[i]!=str2[i]:
-			return str1[:i]
-	return str1
+	def getNilptr(self):
+		n = 0;
+		for c in self.children:
+			if c:
+				n+= c.getNilptr()
+			else:
+				n+=1
+		return n
 
-
+#######################
 ####### M A I N #######
+#######################
+
 t0 = time.time()
 pt = PatriciaTree()
 
@@ -163,6 +202,8 @@ with open("Shakespeare/1henryiv.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
 
-pt.getWords("")
+print "Hauteur de l'arbre: ", pt.getHeight()
+print "Nombre de pointeurs NIL: ", pt.getNilptr()
+print "Nombre de mots dans l'arbre: ", pt.getWordCount()
 
 print "Execution time: ", time.time() - t0
