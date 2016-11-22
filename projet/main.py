@@ -29,8 +29,8 @@ def comonPrefix(str1, str2):
 	for i in range(len(minStr)):
 		if str2[i]:
 			if str1[i]!=str2[i]:
-				return str1[:i]
-	return str1
+				return minStr[:i]
+	return minStr
 
 
 ############################
@@ -82,8 +82,7 @@ class PatriciaTree(object):
 					return False
 				else:
 					if DEBUG: print "Ajout clefs sans fils"
-					self.children[getIdWord(strpre)]=PatriciaTree()
-					self.children[getIdWord(strpre)]=PatriciaTree()
+					self.children[getIdWord(strpre)] = PatriciaTree()
 					self.children[getIdWord(strpre)].addrec(suffixkey)
 					return self.children[getIdWord(strpre)].addrec(suffixword)
 			#cas ou la clef a un fils
@@ -135,6 +134,31 @@ class PatriciaTree(object):
 					if self.children[getIdWord(k)]:
 						self.children[getIdWord(k)].printWords(word + k)
 
+	def countWordsRec(self):
+		nb = 0
+		for k in self.key:
+			if k:
+				if k[-1:] == '_':
+					nb+=1
+				else:
+					if self.children[getIdWord(k)]:
+						nb+=self.children[getIdWord(k)].countWordsRec()
+		return nb
+
+	def prefixCount(self, word):
+		if word == "" and self.key[0] == '_':
+			return self.countWordsRec()
+		mykey = self.key[getIdWord(word)]
+		if mykey == None:
+			return 0
+		elif self.key[getIdWord(word)][:-1] == word:
+			return self.countWordsRec()
+		elif self.children[getIdWord(mykey)] == None:
+			return 0
+		else:
+			prefix = comonPrefix(self.key[getIdWord(word)], word)
+			word = word[len(prefix):]
+			return self.children[getIdWord(mykey)].search(word)
 
 	def displayKey(self):
 		j = 0;
@@ -193,44 +217,57 @@ class PatriciaTree(object):
 		return n
 
 	def merge(self, pt):
-		for i, val in enumerate(self.key):
-			print "merge de: ", self.key[i], pt.key[i]   
-			if not pt.key[i]:
-				continue 
-			#Si il y a une clefs dans pt mais pas dans self
-			if pt.key[i] and not val:
-				self.key[i] = pt.key[i]
-				self.children[i] = pt.children[i]
-			#Si clef identique on merge les deux fils si ils existent
-			elif self.key[i] == pt.key[i]:
-				if self.children[i]: 
-					self.children[i].merge(pt.children[i])
-			else:
-				strpre = comonPrefix(self.key[i], pt.key[i])
-				suffixkey=self.key[i][len(strpre):]
-				suffixpt=pt.key[i][len(strpre):]
-				pt2 = PatriciaTree()
-				#Si le suffixe de la clef est vide
-				#on fait une copie du pt ou la clef est sont suffixe
-				#et on merge les deux
-				if len(suffixkey) == 0:
-					pt2.key[i] = pt.key[i]
-					pt2.children[i] = pt.children[i]
-					self.children[i].merge(pt2)
-				elif len(suffixpt) == 0:
-					pt2.key[getIdWord(suffixkey)] = suffixkey
-					pt2.children[getIdWord(suffixkey)] = self.children[i]
-					self.children[i] = pt2.merge(pt.children[i]) 
-					self.key[i] = strpre
+			for i, val in enumerate(self.key):
+				if not pt.key[i]:
+					continue 
+				#Si il y a une clefs dans pt mais pas dans self
+				if pt.key[i] and not val:
+					self.key[i] = pt.key[i]
+					self.children[i] = pt.children[i]
+				#Si clef identique on merge les deux fils si ils existent
+				elif self.key[i] == pt.key[i]:
+					if DEBUG: print "EGAL"
+					if self.children[i]: 
+						self.children[i].merge(pt.children[i])
 				else:
-					pt2.children[getIdWord(suffixkey)] = self.children[i]
-					pt2.children[getIdWord(suffixpt)] = pt.children[i]
-					self.key[i] = strpre
-					self.children[i] = pt2
+					strpre = comonPrefix(self.key[i], pt.key[i])
+					suffixkey=self.key[i][len(strpre):]
+					suffixpt=pt.key[i][len(strpre):]
+					if DEBUG: print "merge de: ", self.key[i], pt.key[i], "strpre =", strpre, " suffixkey =", suffixkey, " suffixpt =", suffixpt
+					pt2 = PatriciaTree()
+					if len(suffixkey) == 0:
+						if DEBUG: print "len(suffixkey) = 0"
+						pt2.key[getIdWord(suffixpt)] = suffixpt
+						pt2.children[getIdWord(suffixpt)] = pt.children[i]
+						if self.children[i].key[getIdWord(suffixpt)]:
+							if DEBUG: print "A"
+							self.children[i].merge(pt2)
+						else:
+							if DEBUG: print "B"
+							self.children[i].key[getIdWord(suffixpt)] = suffixpt 
+							self.children[i].children[getIdWord(suffixpt)] = pt.children[i] 
 
-
-
-
+					elif len(suffixpt) == 0:
+						if DEBUG: print "len(suffixpt) = 0"
+						pt2.key[getIdWord(suffixkey)] = suffixkey
+						pt2.children[getIdWord(suffixkey)] = self.children[i]
+						if pt.children[i].key[getIdWord(suffixkey)]:
+							if DEBUG: print "A"
+							pt.children[i].merge(pt2)
+						else:
+							if DEBUG: print "B"
+							pt.children[i].key[getIdWord(suffixkey)] = suffixkey 
+							pt.children[i].children[getIdWord(suffixkey)] = self.children[i] 
+						self.children[i] = pt.children[i]
+						self.key[i] = strpre
+					else:
+						if DEBUG: print "LAST"
+						pt2.children[getIdWord(suffixkey)] = self.children[i]
+						pt2.key[getIdWord(suffixkey)] = suffixkey
+						pt2.children[getIdWord(suffixpt)] = pt.children[i]
+						pt2.key[getIdWord(suffixpt)] = suffixpt
+						self.key[i] = strpre
+						self.children[i] = pt2
 
 #######################
 ####### M A I N #######
@@ -239,24 +276,21 @@ class PatriciaTree(object):
 t0 = time.time()
 pt = PatriciaTree()
 pt2 = PatriciaTree()
-"""
+
+
 with open("Shakespeare/1henryiv.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
-"""
 
-pt2.add("toto")
-pt2.add("tata")
-pt2.add("taratata")
-pt.add("total")
-pt.add("totalitaire")
-pt.add("totaux")
-pt.add("tamer")
+with open("Shakespeare/1henryvi.txt") as f:
+     for w in f.readlines():
+     	pt2.add(w[:-1])
+
+
 print "Hauteur de l'arbre: ", pt.getHeight()
 print "Nombre de pointeurs NIL: ", pt.getNilptr()
 print "Nombre de mots dans l'arbre: ", pt.getWordCount()
-print "##########"
-pt.printWords("")
-print "##########"
+
 pt.merge(pt2)
+print pt.countWordsRec()
 print "Execution time: ", time.time() - t0
