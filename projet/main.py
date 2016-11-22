@@ -25,7 +25,8 @@ def getIdWord(s):
 		print 'PANIC : '+char+'non connu'
 
 def comonPrefix(str1, str2):
-	for i in range(len(str1)):
+	minStr = str1 if len(str1) <= len(str2) else str2
+	for i in range(len(minStr)):
 		if str2[i]:
 			if str1[i]!=str2[i]:
 				return str1[:i]
@@ -132,7 +133,7 @@ class PatriciaTree(object):
 					print word + k[:-1]
 				else:
 					if self.children[getIdWord(k)]:
-						self.children[getIdWord(k)].getWords(word + k)
+						self.children[getIdWord(k)].printWords(word + k)
 
 
 	def displayKey(self):
@@ -191,19 +192,71 @@ class PatriciaTree(object):
 				n+=1
 		return n
 
+	def merge(self, pt):
+		for i, val in enumerate(self.key):
+			print "merge de: ", self.key[i], pt.key[i]   
+			if not pt.key[i]:
+				continue 
+			#Si il y a une clefs dans pt mais pas dans self
+			if pt.key[i] and not val:
+				self.key[i] = pt.key[i]
+				self.children[i] = pt.children[i]
+			#Si clef identique on merge les deux fils si ils existent
+			elif self.key[i] == pt.key[i]:
+				if self.children[i]: 
+					self.children[i].merge(pt.children[i])
+			else:
+				strpre = comonPrefix(self.key[i], pt.key[i])
+				suffixkey=self.key[i][len(strpre):]
+				suffixpt=pt.key[i][len(strpre):]
+				pt2 = PatriciaTree()
+				#Si le suffixe de la clef est vide
+				#on fait une copie du pt ou la clef est sont suffixe
+				#et on merge les deux
+				if len(suffixkey) == 0:
+					pt2.key[i] = pt.key[i]
+					pt2.children[i] = pt.children[i]
+					self.children[i].merge(pt2)
+				elif len(suffixpt) == 0:
+					pt2.key[getIdWord(suffixkey)] = suffixkey
+					pt2.children[getIdWord(suffixkey)] = self.children[i]
+					self.children[i] = pt2.merge(pt.children[i]) 
+					self.key[i] = strpre
+				else:
+					pt2.children[getIdWord(suffixkey)] = self.children[i]
+					pt2.children[getIdWord(suffixpt)] = pt.children[i]
+					self.key[i] = strpre
+					self.children[i] = pt2
+
+
+
+
+
 #######################
 ####### M A I N #######
 #######################
 
 t0 = time.time()
 pt = PatriciaTree()
-
+pt2 = PatriciaTree()
+"""
 with open("Shakespeare/1henryiv.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
+"""
 
+pt2.add("toto")
+pt2.add("tata")
+pt2.add("taratata")
+pt.add("total")
+pt.add("totalitaire")
+pt.add("totaux")
+pt.add("tamer")
 print "Hauteur de l'arbre: ", pt.getHeight()
 print "Nombre de pointeurs NIL: ", pt.getNilptr()
 print "Nombre de mots dans l'arbre: ", pt.getWordCount()
-
+print "##########"
+pt.printWords("")
+print "##########"
+pt.merge(pt2)
 print "Execution time: ", time.time() - t0
