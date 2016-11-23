@@ -269,6 +269,17 @@ class PatriciaTree(object):
 						self.key[i] = strpre
 						self.children[i] = pt2
 
+
+	def toDot(self, nodeNumber):
+		cpt = 1
+		dotcode = "node" + str(nodeNumber) + "[label = \""
+		for k in self.key:
+			if k:
+				dotcode+= "<f" + str(cpt) + "> " + k + "|"
+				cpt+=1
+		print dotcode + "\"];"
+
+
 #######################
 ####### M A I N #######
 #######################
@@ -277,20 +288,18 @@ t0 = time.time()
 pt = PatriciaTree()
 pt2 = PatriciaTree()
 
-
+"""
 with open("Shakespeare/1henryiv.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
+"""
 
-with open("Shakespeare/1henryvi.txt") as f:
-     for w in f.readlines():
-     	pt2.add(w[:-1])
+pt.add("ab")
+pt.add("cd")
+pt.add("ef")
+pt.add("gh")
+pt.toDot(0)
 
 
-print "Hauteur de l'arbre: ", pt.getHeight()
-print "Nombre de pointeurs NIL: ", pt.getNilptr()
-print "Nombre de mots dans l'arbre: ", pt.getWordCount()
 
-pt.merge(pt2)
-print pt.countWordsRec()
-print "Execution time: ", time.time() - t0
+#print "Execution time: ", time.time() - t0
