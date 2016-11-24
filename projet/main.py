@@ -270,28 +270,30 @@ class PatriciaTree(object):
 						self.children[i] = pt2
 
 	def toDot(self):
-		print  "digraph graphname {	node [shape=record];"
+		print  "digraph graphname {	rankdir=LR; node [shape=record, height=0.02, fontsize=8];"
 		self.toDotKeys(0)
 		print "}"
 
-
-	def toDotKeys(self, nodeNumber):
-		#generation du code pour afficher le noeud actuel
+	#nodeId est un identifiant non utiliser de noeud
+	def toDotKeys(self, nodeId):
+		mySons = ""
+		myID = nodeId
+		nodeId+=1
 		cpt = 1
-		dotcode = "node" + str(nodeNumber) + "[label = \""
-		for k in self.key:
+		dotcode = "node" + str(myID) + "[label = \""
+		for i, k in enumerate(self.key):
 			if k:
+				#Ajout de la clefs dans le noeud
 				dotcode+= "<f" + str(cpt) + "> " + k + "|"
+				#Appel recursive pour cree le noeud fils
+				if self.children[i]:
+					idtmp = self.children[i].toDotKeys(nodeId)
+					mySons += "node" + str(myID) + ":f" + str(cpt) + " -> node" + str(nodeId) + "\n"
+					nodeId = idtmp
 				cpt+=1
 		print dotcode[:-1] + "\"];"
-		nodeNumber+=1
-		#appel recusif pour afficher les noeuds des fils
-		for i, c in enumerate(self.children):
-			if c:
-				nodeNumber = c.toDotKeys(nodeNumber)
-				#print "node" + str(nodeNumber-1) + ":f" + str(i) + " -> node" + str(nodeNumber)
-				nodeNumber+=1
-		return nodeNumber
+		print mySons
+		return nodeId+1
 
 
 #######################
@@ -302,7 +304,12 @@ t0 = time.time()
 pt = PatriciaTree()
 pt2 = PatriciaTree()
 
+
 with open("Shakespeare/1henryiv.txt") as f:
+     for w in f.readlines():
+     	pt.add(w[:-1])
+
+with open("Shakespeare/1henryvi.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
 
