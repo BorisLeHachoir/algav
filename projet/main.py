@@ -269,15 +269,29 @@ class PatriciaTree(object):
 						self.key[i] = strpre
 						self.children[i] = pt2
 
+	def toDot(self):
+		print  "digraph graphname {	node [shape=record];"
+		self.toDotKeys(0)
+		print "}"
 
-	def toDot(self, nodeNumber):
+
+	def toDotKeys(self, nodeNumber):
+		#generation du code pour afficher le noeud actuel
 		cpt = 1
 		dotcode = "node" + str(nodeNumber) + "[label = \""
 		for k in self.key:
 			if k:
 				dotcode+= "<f" + str(cpt) + "> " + k + "|"
 				cpt+=1
-		print dotcode + "\"];"
+		print dotcode[:-1] + "\"];"
+		nodeNumber+=1
+		#appel recusif pour afficher les noeuds des fils
+		for i, c in enumerate(self.children):
+			if c:
+				nodeNumber = c.toDotKeys(nodeNumber)
+				#print "node" + str(nodeNumber-1) + ":f" + str(i) + " -> node" + str(nodeNumber)
+				nodeNumber+=1
+		return nodeNumber
 
 
 #######################
@@ -288,17 +302,11 @@ t0 = time.time()
 pt = PatriciaTree()
 pt2 = PatriciaTree()
 
-"""
 with open("Shakespeare/1henryiv.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
-"""
 
-pt.add("ab")
-pt.add("cd")
-pt.add("ef")
-pt.add("gh")
-pt.toDot(0)
+pt.toDot()
 
 
 

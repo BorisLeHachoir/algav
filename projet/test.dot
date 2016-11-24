@@ -1,6 +1,0 @@
- digraph graphname {
- 	node [shape=record];
-		node0[label = "<f1> ab_|<f2> cd_|<f3> ef_|<f4> gh_"];
-
- }
-
