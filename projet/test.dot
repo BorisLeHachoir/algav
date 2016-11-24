@@ -1,4 +1,4 @@
-digraph graphname {	rankdir=LR; node [shape=record, height=0.02, fontsize=8];
+digraph graphname {	rankdir=LR splines=polyline; node [shape=record, height=0.02, fontsize=8];
 node3[label = "<f1> de_|<f2> minable_|<f3> ut_|<f4> ve_"];
 
 node5[label = "<f1> oad_|<f2> upt_"];

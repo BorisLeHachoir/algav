@@ -270,7 +270,7 @@ class PatriciaTree(object):
 						self.children[i] = pt2
 
 	def toDot(self):
-		print  "digraph graphname {	rankdir=LR; node [shape=record, height=0.02, fontsize=8];"
+		print  "digraph graphname {	rankdir=LR splines=polyline; node [shape=record, height=0.02, fontsize=8];"
 		self.toDotKeys(0)
 		print "}"
 
