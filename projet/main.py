@@ -113,6 +113,8 @@ class PatriciaTree(object):
 	def search(self, word):
 		if word == "" and self.key[0] == '_':
 			return True
+		if word == "":
+			return False
 		mykey = self.key[getIdWord(word)]
 		if mykey == None:
 			return False
@@ -216,6 +218,23 @@ class PatriciaTree(object):
 				n+=1
 		return n
 
+	def nbPrefixe(self, word):
+		#Code similaire a un search qui retourne countWordsRec sur le noeud final  
+		if word == "":
+			return self.countWordsRec()
+		mykey = self.key[getIdWord(word)]
+		if mykey == None:
+			return 0
+		elif self.key[getIdWord(word)][:-1] == word:
+			return 1
+		elif self.children[getIdWord(mykey)] == None:
+			return 0
+		else:
+			prefix = comonPrefix(self.key[getIdWord(word)], word)
+			word = word[len(prefix):]
+			return self.children[getIdWord(mykey)].nbPrefixe(word)
+
+
 	def merge(self, pt):
 			for i, val in enumerate(self.key):
 				if not pt.key[i]:
@@ -309,11 +328,9 @@ with open("Shakespeare/1henryiv.txt") as f:
      for w in f.readlines():
      	pt.add(w[:-1])
 
-with open("Shakespeare/1henryvi.txt") as f:
-     for w in f.readlines():
-     	pt.add(w[:-1])
-
-pt.toDot()
+pt.printsearch("z")
+print pt.nbPrefixe("now")
+print pt.nbPrefixe("z")
 
 
 
