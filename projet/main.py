@@ -113,6 +113,41 @@ class PatriciaTree(object):
 					else:
 						print "PANIC: strpre&oldkey"
 
+	def delete(self, word):
+		word += '_'
+		if self.deleterec(word):
+			wordCount-=1
+
+	def deleterec(self, word):
+		if word[0] == '_':
+			if self.key[0] == '_':
+				self.key[0] = None
+				return True
+			return False
+		elif word == self.key[getIdWord(word)]:
+			self.key = None
+			return True
+		else:
+			idKey = getIdWord(word)
+			myKey = self.key[idKey]
+			strpre = comonPrefix(myKey, word)
+			suffixkey=myKey[len(strpre):]
+			suffixword=word[len(strpre):]
+			#Si la suppression a eu lieu et qu'il n'y a qu'un fils, on le remonte
+			if self.children[idKey].deleterec(suffixword):
+				if self.nbChildren() == 1:
+					self.key[idKey] = myKey + self.children[idKey].key[getIdWord(suffixkey)]
+					self.children[idKey] = self.children[idkey].children[getIdWord(suffixkey)]
+				return True
+			return False
+
+	def nbChildren(self):
+		cpt = 0
+		for c in self.children:
+			if c:
+				cpt+=1
+		return cpt
+
 
 	def printsearch(self, word):
 		print "Recherche de: ", word, ": ", str(self.search(word))
@@ -342,6 +377,7 @@ class PatriciaTree(object):
 
 
 
+
 #######################
 ####### M A I N #######
 #######################
@@ -356,8 +392,8 @@ for file in glob.glob("*.txt"):
     with open(file) as f:
      for w in f.readlines():
      	pt.add(w[:-1])
-"""
 
+"""
 with open("Shakespeare/1henryiv.txt") as f:
  for w in f.readlines():
  	pt.add(w[:-1])
