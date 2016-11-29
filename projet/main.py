@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import time
 import sys
+import glob, os
 
-ALPHABET_SIZE = 40
+ALPHABET_SIZE = 43
 DEBUG = 0
 #todo Cpt de NIL et de hauteur a update directement dans l'ajout 
 #todo comonPrefix 
@@ -21,8 +22,14 @@ def getIdWord(s):
 		return 38
 	elif char==']':
 		return 39
+	elif char=='$':
+		return 40
+	elif char=='(':
+		return 41
+	elif char==')':
+		return 42
 	else:
-		print 'PANIC : '+char+'non connu'
+		print 'PANIC : '+char+' non connu'
 
 def comonPrefix(str1, str2):
 	minStr = str1 if len(str1) <= len(str2) else str2
@@ -314,6 +321,26 @@ class PatriciaTree(object):
 		print mySons
 		return nodeId+1
 
+	def isLeaf(self):
+		for c in self.children:
+			if c:
+				return False
+		return True
+
+	def averageDeep(self):
+		tab = []
+		self.averageDeepRec(tab, 0)
+		return float(sum(tab))/len(tab)
+
+	def averageDeepRec(self, tab ,deep):
+		if self.isLeaf():
+			tab.append(deep)
+		else:
+			for c in self.children:
+				if c:
+					c.averageDeepRec(tab, deep+1)
+
+
 
 #######################
 ####### M A I N #######
@@ -323,15 +350,23 @@ t0 = time.time()
 pt = PatriciaTree()
 pt2 = PatriciaTree()
 
-
-with open("Shakespeare/1henryiv.txt") as f:
+os.chdir("Shakespeare/")
+for file in glob.glob("*.txt"):
+    print "Processing ", file, "..."
+    with open(file) as f:
      for w in f.readlines():
      	pt.add(w[:-1])
+"""
 
-pt.printsearch("z")
-print pt.nbPrefixe("now")
-print pt.nbPrefixe("z")
+with open("Shakespeare/1henryiv.txt") as f:
+ for w in f.readlines():
+ 	pt.add(w[:-1])
+"""
 
 
 
-#print "Execution time: ", time.time() - t0
+print pt.averageDeep()
+print pt.getHeight()
+
+
+print "Execution time: ", time.time() - t0
