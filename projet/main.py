@@ -57,7 +57,7 @@ class PatriciaTree(object):
 
 
 	def addrec(self, word):
-		#test word est vide
+		#Cas du mot vide
 		if word[0] == '_':
 			if not self.key[0]: 
 				if DEBUG: print "Ajout '_'"
@@ -67,12 +67,13 @@ class PatriciaTree(object):
 				if DEBUG: print "MOT DEJA PRESENT"
 				return False
 
+		#Cas de la clef vide, on ajoue directement le mot
 		elif not self.key[getIdWord(word)]:
 			self.key[getIdWord(word)] = word
 			if DEBUG: print "Ajout clef vide"
 			return True
 
-		#Si il y a une clef deja presente
+		#Si il y a une clef deja presente, calcul des prefixes et des suffixes
 		else:
 			strpre = comonPrefix(self.key[getIdWord(word)], word)
 			suffixkey=self.key[getIdWord(strpre)][len(strpre):]
@@ -116,7 +117,7 @@ class PatriciaTree(object):
 	def delete(self, word):
 		word += '_'
 		if self.deleterec(word):
-			wordCount-=1
+			self.wordCount-=1
 
 	def deleterec(self, word):
 		if word[0] == '_':
@@ -124,20 +125,32 @@ class PatriciaTree(object):
 				self.key[0] = None
 				return True
 			return False
+
+		elif self.key[getIdWord(word)] == None:
+			return False
+
 		elif word == self.key[getIdWord(word)]:
-			self.key = None
+			self.key[getIdWord(word)] = None
 			return True
+
 		else:
 			idKey = getIdWord(word)
 			myKey = self.key[idKey]
 			strpre = comonPrefix(myKey, word)
-			suffixkey=myKey[len(strpre):]
 			suffixword=word[len(strpre):]
 			#Si la suppression a eu lieu et qu'il n'y a qu'un fils, on le remonte
 			if self.children[idKey].deleterec(suffixword):
 				if self.nbChildren() == 1:
-					self.key[idKey] = myKey + self.children[idKey].key[getIdWord(suffixkey)]
-					self.children[idKey] = self.children[idkey].children[getIdWord(suffixkey)]
+					#recherche de notre fils
+					for c in self.children:
+						if c:
+							#recherche de sa clef
+							for k in c.key:
+								if k:
+									self.key[idKey] = myKey + k
+									#On remonte d'un niveau ses fils si ils existent
+									if c.children[getIdWord(k)]:
+										self.children[idkey] = c.children[getIdWord(k)]	
 				return True
 			return False
 
@@ -375,6 +388,8 @@ class PatriciaTree(object):
 				if c:
 					c.averageDeepRec(tab, deep+1)
 
+	#def multitreading(self)
+
 
 
 
@@ -386,6 +401,7 @@ t0 = time.time()
 pt = PatriciaTree()
 pt2 = PatriciaTree()
 
+"""
 os.chdir("Shakespeare/")
 for file in glob.glob("*.txt"):
     print "Processing ", file, "..."
@@ -393,13 +409,18 @@ for file in glob.glob("*.txt"):
      for w in f.readlines():
      	pt.add(w[:-1])
 
-"""
 with open("Shakespeare/1henryiv.txt") as f:
  for w in f.readlines():
  	pt.add(w[:-1])
 """
 
-
+print pt.getWordCount()
+pt.add("lel")
+print pt.getWordCount()
+pt.add("lal")
+print pt.getWordCount()
+pt.delete("sqdsqdqs")
+print pt.getWordCount()
 
 print pt.averageDeep()
 print pt.getHeight()
